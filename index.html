@@ -1,43 +1,128 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
-  <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-      <title>Blogger Offers</title>
-      </head>
-      <body style="font-family: Arial; text-align:center; padding-top:50px;">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Blogger Offers 🔥</title>
 
-        <h1>Blogger Offers 🔥</h1>
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
 
-          <input type="text" id="longUrl" placeholder="حط لينك الافلييت هنا"
-              style="width:80%;padding:10px;"><br><br>
+body{
+font-family:Arial,sans-serif;
+background:#0f172a;
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+padding:20px;
+color:white;
+}
 
-                <input type="text" id="shortCode" placeholder="اختصار اللينك"
-                    style="width:80%;padding:10px;"><br><br>
+.container{
+width:100%;
+max-width:500px;
+background:#1e293b;
+padding:30px;
+border-radius:25px;
+box-shadow:0 0 30px rgba(0,0,0,.4);
+}
 
-                      <button onclick="createLink()" style="padding:10px 20px;">
-                          Create Link
-                            </button>
+h1{
+text-align:center;
+margin-bottom:25px;
+font-size:32px;
+}
 
-                              <p id="result"></p>
+input{
+width:100%;
+padding:15px;
+margin-bottom:15px;
+border:none;
+border-radius:12px;
+font-size:16px;
+background:#334155;
+color:white;
+}
 
-                              <script>
-                              function createLink() {
-                                const url = document.getElementById("longUrl").value;
-                                  const code = document.getElementById("shortCode").value;
+input::placeholder{
+color:#cbd5e1;
+}
 
-                                    localStorage.setItem(code, url);
+button{
+width:100%;
+padding:15px;
+border:none;
+border-radius:12px;
+background:#22c55e;
+color:white;
+font-size:18px;
+font-weight:bold;
+cursor:pointer;
+transition:.3s;
+}
 
-                                      document.getElementById("result").innerHTML =
-                                          "لينكك: " + window.location.origin + "/" + code;
-                                          }
+button:hover{
+background:#16a34a;
+}
 
-                                          const path = window.location.pathname.replace("/", "");
+.resultBox{
+margin-top:20px;
+background:#334155;
+padding:15px;
+border-radius:15px;
+display:none;
+}
 
-                                          if(path && localStorage.getItem(path)) {
-                                            window.location.href = localStorage.getItem(path);
-                                            }
-                                            </script>
+.resultBox a{
+color:#38bdf8;
+word-break:break-all;
+text-decoration:none;
+}
 
-                                            </body>
-                                            </html>
+.copyBtn{
+margin-top:10px;
+background:#3b82f6;
+}
+
+.stats{
+margin-top:10px;
+font-size:14px;
+color:#cbd5e1;
+text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Blogger Offers 🔥</h1>
+
+<input type="text" id="longUrl" placeholder="حط لينك الافلييت هنا">
+
+<input type="text" id="shortCode" placeholder="اسم مختصر للرابط">
+
+<button onclick="createLink()">Create Link</button>
+
+<div class="resultBox" id="resultBox">
+<p>الرابط المختصر:</p>
+
+<a id="shortLink" target="_blank"></a>
+
+<button class="copyBtn" onclick="copyLink()">Copy Link</button>
+
+<div class="stats" id="stats"></div>
+</div>
+
+</div>
+
+<script type="module" src="index.js"></script>
+
+</body>
+</html>
