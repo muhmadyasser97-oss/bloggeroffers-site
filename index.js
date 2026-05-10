@@ -1,67 +1,236 @@
-const express = require("express");
-const shortid = require("shortid");
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-const app = express();
+const supabaseUrl = 'https://mwtdflzkjlaynmrvlkpj.supabase.co'
 
-app.use(express.json());
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13dGRmbHpramxheW5tcnZsa3BqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MTU5NzEsImV4cCI6MjA5Mzk5MTk3MX0.7xPnXS0Xxw4QqrDyrqiVsgI8h_mlK_qVp23gMsMVDnw'
 
-const links = {};
+const supabase = createClient(supabaseUrl, supabaseKey)
 
-app.get("/", (req, res) => {
-  res.send("BloggerOffers Server Running 🚀");
-  });
+const AMAZON_TAG = 'blogeroffe05-21'
 
-  app.post("/shorten", (req, res) => {
-    const { url } = req.body;
+const authBox = document.getElementById('authBox')
+const mainBox = document.getElementById('mainBox')
 
-      if (!url) {
-          return res.status(400).json({
-                error: "No URL provided"
-                    });
-                      }
+const signupBtn = document.getElementById('signupBtn')
+const loginBtn = document.getElementById('loginBtn')
 
-                        const cleanUrl = url.split("?")[0] + "?tag=bloggeroffe05-21";
+const createBtn = document.getElementById('createBtn')
+const copyBtn = document.getElementById('copyBtn')
 
-                          const code = shortid.generate();
+const emailInput = document.getElementById('email')
+const passwordInput = document.getElementById('password')
 
-                            links[code] = {
-                                original: cleanUrl,
-                                    clicks: 0
-                                      };
+const urlInput = document.getElementById('urlInput')
+const resultInput = document.getElementById('result')
 
-                                        res.json({
-                                            shortUrl: `https://bloggeroffers.com/${code}`,
-                                                original: cleanUrl
-                                                  });
-                                                  });
+const linksCount = document.getElementById('linksCount')
+const clicksCount = document.getElementById('clicksCount')
 
-                                                  app.get("/:code", (req, res) => {
-                                                    const code = req.params.code;
+const toast = document.getElementById('toast')
 
-                                                      if (!links[code]) {
-                                                          return res.status(404).send("Link not found");
-                                                            }
+function showToast() {
+  toast.style.display = 'block'
 
-                                                              links[code].clicks++;
+  setTimeout(() => {
+    toast.style.display = 'none'
+  }, 2000)
+}
 
-                                                                res.redirect(links[code].original);
-                                                                });
+function generateCode() {
+  return Math.random().toString(36).substring(2, 8)
+}
 
-                                                                app.get("/stats/:code", (req, res) => {
-                                                                  const code = req.params.code;
+function cleanAmazonLink(url) {
 
-                                                                    if (!links[code]) {
-                                                                        return res.status(404).json({
-                                                                              error: "Not found"
-                                                                                  });
-                                                                                    }
+  try {
 
-                                                                                      res.json({
-                                                                                          url: links[code].original,
-                                                                                              clicks: links[code].clicks
-                                                                                                });
-                                                                                                });
+    const parsed = new URL(url)
 
-                                                                                                app.listen(3000, () => {
-                                                                                                  console.log("Server running on port 3000");
-                                                                                                  });
+    if (!parsed.hostname.includes('amazon.')) {
+      return url
+    }
+
+    const params = parsed.searchParams
+
+    params.delete('tag')
+    params.delete('ref')
+    params.delete('psc')
+    params.delete('smid')
+    params.delete('pd_rd_w')
+    params.delete('pd_rd_r')
+    params.delete('pd_rd_wg')
+    params.delete('pf_rd_p')
+    params.delete('pf_rd_r')
+    params.delete('linkCode')
+    params.delete('ascsubtag')
+    params.delete('content-id')
+    params.delete('dib')
+    params.delete('dib_tag')
+
+    const cleanPath = parsed.pathname.replace(/[^/]*hidden-keywords[^/]*/gi, '')
+
+    params.set('tag', AMAZON_TAG)
+
+    return `${parsed.origin}${cleanPath}?${params.toString()}`
+
+  } catch {
+
+    return url
+
+  }
+}
+
+signupBtn.onclick = async () => {
+
+  const email = emailInput.value.trim()
+  const password = passwordInput.value.trim()
+
+  const { error } = await supabase.auth.signUp({
+    email,
+    password
+  })
+
+  if (error) {
+    alert(error.message)
+    return
+  }
+
+  alert('تم إنشاء الحساب ✅')
+}
+
+loginBtn.onclick = async () => {
+
+  const email = emailInput.value.trim()
+  const password = passwordInput.value.trim()
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  })
+
+  if (error) {
+    alert(error.message)
+    return
+  }
+
+  authBox.classList.add('hidden')
+  mainBox.classList.remove('hidden')
+
+  loadStats()
+}
+
+async function loadStats() {
+
+  const {
+    data: { user }
+  } = await supabase.auth.getUser()
+
+  if (!user) return
+
+  const { data } = await supabase
+    .from('links')
+    .select('*')
+    .eq('user_id', user.id)
+
+  if (!data) return
+
+  linksCount.innerText = data.length
+
+  let totalClicks = 0
+
+  data.forEach(link => {
+    totalClicks += link.clicks || 0
+  })
+
+  clicksCount.innerText = totalClicks
+}
+
+createBtn.onclick = async () => {
+
+  const url = urlInput.value.trim()
+
+  if (!url) {
+    alert('حط لينك')
+    return
+  }
+
+  const cleanUrl = cleanAmazonLink(url)
+
+  const code = generateCode()
+
+  const shortLink = `${window.location.origin}/${code}`
+
+  const {
+    data: { user }
+  } = await supabase.auth.getUser()
+
+  const { error } = await supabase
+    .from('links')
+    .insert({
+      code,
+      original_url: cleanUrl,
+      clicks: 0,
+      user_id: user.id
+    })
+
+  if (error) {
+    alert(error.message)
+    return
+  }
+
+  resultInput.value = shortLink
+
+  loadStats()
+}
+
+copyBtn.onclick = () => {
+
+  resultInput.select()
+
+  document.execCommand('copy')
+
+  showToast()
+}
+
+async function checkRedirect() {
+
+  const path = window.location.pathname.replace('/', '')
+
+  if (!path || path === 'index.html') return
+
+  const { data, error } = await supabase
+    .from('links')
+    .select('*')
+    .eq('code', path)
+    .single()
+
+  if (error || !data) return
+
+  await supabase
+    .from('links')
+    .update({
+      clicks: (data.clicks || 0) + 1
+    })
+    .eq('id', data.id)
+
+  window.location.href = data.original_url
+}
+
+async function checkUser() {
+
+  const {
+    data: { session }
+  } = await supabase.auth.getSession()
+
+  if (session) {
+
+    authBox.classList.add('hidden')
+
+    mainBox.classList.remove('hidden')
+
+    loadStats()
+  }
+}
+
+checkUser()
+checkRedirect()
