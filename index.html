@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+      <title>Blogger Offers</title>
+      </head>
+      <body style="font-family: Arial; text-align:center; padding-top:50px;">
+
+        <h1>Blogger Offers 🔥</h1>
+
+          <input type="text" id="longUrl" placeholder="حط لينك الافلييت هنا"
+              style="width:80%;padding:10px;"><br><br>
+
+                <input type="text" id="shortCode" placeholder="اختصار اللينك"
+                    style="width:80%;padding:10px;"><br><br>
+
+                      <button onclick="createLink()" style="padding:10px 20px;">
+                          Create Link
+                            </button>
+
+                              <p id="result"></p>
+
+                              <script>
+                              function createLink() {
+                                const url = document.getElementById("longUrl").value;
+                                  const code = document.getElementById("shortCode").value;
+
+                                    localStorage.setItem(code, url);
+
+                                      document.getElementById("result").innerHTML =
+                                          "لينكك: " + window.location.origin + "/" + code;
+                                          }
+
+                                          const path = window.location.pathname.replace("/", "");
+
+                                          if(path && localStorage.getItem(path)) {
+                                            window.location.href = localStorage.getItem(path);
+                                            }
+                                            </script>
+
+                                            </body>
+                                            </html>
