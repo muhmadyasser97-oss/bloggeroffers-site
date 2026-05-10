@@ -1,150 +1,256 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
+
+
 const supabaseUrl = 'https://mwtdflzkjlaynmrvlkpj.supabase.co'
 
 const supabaseKey = 'sb_publishable_Y-qqdm5sqQQe7BzRv5G_XQ_c5ia1CNM'
 
-const supabase = createClient(supabaseUrl, supabaseKey)
+
+
+const supabase = createClient(
+  supabaseUrl,
+  supabaseKey
+)
+
+
 
 const AMAZON_TAG = 'blogeroffe05-21'
 
-const authBox = document.getElementById('authBox')
-const mainBox = document.getElementById('mainBox')
 
-const signupBtn = document.getElementById('signupBtn')
-const loginBtn = document.getElementById('loginBtn')
-
-const emailInput = document.getElementById('email')
-const passwordInput = document.getElementById('password')
 
 const longUrlInput = document.getElementById('longUrl')
+
 const resultBox = document.getElementById('result')
 
-signupBtn.onclick = async () => {
+const linksTable = document.getElementById('linksTable')
 
-  const email = emailInput.value
-  const password = passwordInput.value
+const linksCount = document.getElementById('linksCount')
 
-  const { error } = await supabase.auth.signUp({
-    email,
-    password
-  })
+const clicksCount = document.getElementById('clicksCount')
 
-  if (error) {
-    alert(error.message)
-  } else {
-    alert('🔥 تم إنشاء الحساب')
-  }
-}
 
-loginBtn.onclick = async () => {
 
-  const email = emailInput.value
-  const password = passwordInput.value
+let lastShortLink = ''
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password
-  })
 
-  if (error) {
-    alert(error.message)
-  } else {
 
-    authBox.style.display = 'none'
-    mainBox.style.display = 'block'
-
-    alert('🔥 تم تسجيل الدخول')
-  }
-}
-
-async function createShortLink() {
+window.createShortLink = async function () {
 
   let url = longUrlInput.value.trim()
 
   if (!url) {
-    alert('ضيفي لينك')
+    alert('ضيف لينك')
     return
   }
 
-  if (url.includes('amazon')) {
 
+
+  // فك أي لينك مختصر
+  try {
+
+    const response = await fetch(url, {
+      method:'HEAD',
+      redirect:'follow'
+    })
+
+    url = response.url
+
+  } catch(e) {}
+
+
+
+  // تنظيف لينكات أمازون
+  if (url.includes('amazon.')) {
+
+    // حذف tag المنافسين
+    url = url.replace(/([?&])tag=[^&]*/g, '')
+
+    // حذف ref
+    url = url.replace(/([?&])ref=[^&]*/g, '')
+
+    // حذف psc
+    url = url.replace(/([?&])psc=[^&]*/g, '')
+
+    // تنظيف الشكل
+    url = url.replace('?&', '?')
+
+    url = url.replace(/&&/g, '&')
+
+    url = url.replace(/\?$/, '')
+
+
+
+    // إضافة التاج بتاعك
     if (url.includes('?')) {
-      url += `&tag=${AMAZON_TAG}`
+      url += '&tag=' + AMAZON_TAG
     } else {
-      url += `?tag=${AMAZON_TAG}`
+      url += '?tag=' + AMAZON_TAG
     }
+
   }
 
-  const code = Math.random().toString(36).substring(2, 8)
 
-  const userData = await supabase.auth.getUser()
 
-  const user = userData.data.user
+  // إنشاء كود مختصر
+  const code = Math
+    .random()
+    .toString(36)
+    .substring(2,8)
 
+
+
+  // حفظ في Supabase
   const { error } = await supabase
     .from('links')
     .insert([
       {
-        code: code,
-        original_url: url,
-        clicks: 0,
-        user_id: user?.id
+        code:code,
+        original_url:url,
+        clicks:0
       }
     ])
 
+
+
   if (error) {
+
     alert(error.message)
+
     return
   }
 
-  const shortUrl = window.location.origin + '/' + code
 
-  resultBox.innerHTML = `
-    <div style="margin-top:20px">
-      <input 
-        value="${shortUrl}" 
-        readonly
-        style="
-          width:100%;
-          padding:12px;
-          border-radius:10px;
-          border:none;
-          margin-bottom:10px;
-        "
-      >
 
-      <button onclick="copyLink('${shortUrl}')"
-        style="
-          width:100%;
-          padding:12px;
-          border:none;
-          border-radius:10px;
-          background:#ff4d6d;
-          color:white;
-          font-size:16px;
-          cursor:pointer;
-        ">
-        نسخ الرابط 🔥
-      </button>
-    </div>
-  `
+  // إنشاء اللينك المختصر
+  lastShortLink =
+    window.location.origin + '/' + code
+
+
+
+  resultBox.innerHTML = lastShortLink
+
+
+
+  loadLinks()
 }
 
-window.createShortLink = createShortLink
 
-window.copyLink = async function(link) {
 
-  await navigator.clipboard.writeText(link)
+// نسخ آخر لينك
+window.copyLastLink = async function () {
+
+  if (!lastShortLink) {
+
+    alert('اعملي لينك الأول')
+
+    return
+  }
+
+  await navigator.clipboard.writeText(
+    lastShortLink
+  )
 
   alert('🔥 تم نسخ الرابط')
 }
 
+
+
+// تحميل اللينكات
+async function loadLinks() {
+
+  const { data } = await supabase
+    .from('links')
+    .select('*')
+    .order('id', {
+      ascending:false
+    })
+
+
+
+  linksTable.innerHTML = ''
+
+  let totalClicks = 0
+
+
+
+  data.forEach(link => {
+
+    totalClicks += link.clicks
+
+
+
+    const shortLink =
+      window.location.origin +
+      '/' +
+      link.code
+
+
+
+    linksTable.innerHTML += `
+
+      <tr>
+
+        <td>
+
+          <a
+            href="${shortLink}"
+            target="_blank"
+          >
+            ${link.code}
+          </a>
+
+        </td>
+
+        <td>
+          ${link.clicks}
+        </td>
+
+        <td>
+
+          <button
+            onclick="copyText('${shortLink}')"
+          >
+            Copy
+          </button>
+
+        </td>
+
+      </tr>
+
+    `
+  })
+
+
+
+  linksCount.innerText = data.length
+
+  clicksCount.innerText = totalClicks
+}
+
+
+
+// نسخ أي لينك
+window.copyText = async function(text) {
+
+  await navigator.clipboard.writeText(text)
+
+  alert('🔥 تم النسخ')
+}
+
+
+
+// ريديركت اللينكات
 async function checkRedirect() {
 
-  const path = window.location.pathname.replace('/', '')
+  const path =
+    window.location.pathname.replace('/','')
+
+
 
   if (!path) return
+
+
 
   const { data } = await supabase
     .from('links')
@@ -152,17 +258,28 @@ async function checkRedirect() {
     .eq('code', path)
     .single()
 
+
+
   if (data) {
 
+    // زيادة الكليكات
     await supabase
       .from('links')
       .update({
-        clicks: data.clicks + 1
+        clicks:data.clicks + 1
       })
       .eq('code', path)
 
-    window.location.href = data.original_url
+
+
+    // تحويل للرابط الأصلي
+    window.location.href =
+      data.original_url
   }
 }
 
+
+
 checkRedirect()
+
+loadLinks()
