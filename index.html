@@ -1,11 +1,14 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Blogger Offers</title>
+
+  <title>Blogger Offers 🔥</title>
 
   <style>
+
     *{
       margin:0;
       padding:0;
@@ -13,36 +16,34 @@
     }
 
     body{
-      font-family:Arial;
-      background:#0f172a;
+      font-family:Arial,sans-serif;
+      background:#081120;
       color:white;
       min-height:100vh;
-      display:flex;
-      justify-content:center;
-      align-items:center;
       padding:20px;
     }
 
     .container{
-      width:100%;
-      max-width:550px;
-      background:rgba(255,255,255,0.05);
-      backdrop-filter:blur(12px);
-      border:1px solid rgba(255,255,255,0.1);
-      padding:30px;
-      border-radius:25px;
-      box-shadow:0 0 30px rgba(0,0,0,.3);
+      max-width:700px;
+      margin:auto;
+    }
+
+    .card{
+      background:#111c33;
+      border-radius:24px;
+      padding:24px;
+      box-shadow:0 0 30px rgba(0,0,0,.2);
     }
 
     h1{
       text-align:center;
       font-size:42px;
-      margin-bottom:30px;
+      margin-bottom:12px;
     }
 
-    p.subtitle{
+    .sub{
       text-align:center;
-      color:#94a3b8;
+      color:#bfc7d9;
       margin-bottom:25px;
     }
 
@@ -51,139 +52,130 @@
       padding:16px;
       border:none;
       border-radius:14px;
-      margin-bottom:15px;
-      background:#1e293b;
+      background:#18243f;
       color:white;
-      font-size:15px;
-    }
-
-    input::placeholder{
-      color:#94a3b8;
+      margin-bottom:14px;
+      font-size:16px;
     }
 
     button{
       width:100%;
-      padding:15px;
+      padding:16px;
       border:none;
       border-radius:14px;
-      background:linear-gradient(135deg,#ff4d6d,#ff758f);
-      color:white;
-      font-size:16px;
+      font-size:18px;
       font-weight:bold;
       cursor:pointer;
-      transition:.3s;
+    }
+
+    .createBtn{
+      background:#ff4f7b;
+      color:white;
+      margin-bottom:16px;
+    }
+
+    .copyBtn{
+      background:#22c55e;
+      color:white;
       margin-top:10px;
     }
 
-    button:hover{
-      transform:scale(1.02);
-    }
-
-    .secondary-btn{
-      background:#22c55e;
-    }
-
-    .buttons{
-      display:flex;
-      gap:10px;
+    .result{
+      background:#18243f;
+      padding:14px;
+      border-radius:12px;
+      margin-top:10px;
+      word-break:break-all;
     }
 
     .stats{
-      margin-top:25px;
-      display:flex;
-      gap:10px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:15px;
+      margin-top:20px;
     }
 
-    .stat-card{
-      flex:1;
-      background:#111827;
-      padding:18px;
+    .statBox{
+      background:#0a1429;
       border-radius:18px;
+      padding:20px;
       text-align:center;
     }
 
-    .stat-card h3{
-      font-size:24px;
-      margin-bottom:5px;
+    .statBox h2{
+      font-size:36px;
+      margin-bottom:8px;
     }
 
-    .stat-card p{
-      color:#94a3b8;
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:20px;
     }
 
-    #toast{
-      position:fixed;
-      bottom:20px;
-      right:20px;
-      background:#22c55e;
-      color:white;
-      padding:14px 20px;
-      border-radius:12px;
-      display:none;
-      z-index:999;
+    th,td{
+      padding:12px;
+      text-align:center;
+      border-bottom:1px solid #22314f;
+      font-size:14px;
     }
 
-    .hidden{
-      display:none;
+    a{
+      color:#4ea1ff;
+      text-decoration:none;
     }
 
   </style>
 </head>
+
 <body>
 
 <div class="container">
 
-  <h1>🔥 Blogger Offers</h1>
+  <div class="card">
 
-  <p class="subtitle">
-    حول أي لينك أمازون لأفلييت لينك احترافي
-  </p>
+    <h1>🔥 Blogger Offers</h1>
 
-  <div id="authBox">
-
-    <input type="email" id="email" placeholder="الايميل">
-
-    <input type="password" id="password" placeholder="الباسورد">
-
-    <div class="buttons">
-      <button id="signupBtn">إنشاء حساب</button>
-      <button id="loginBtn">تسجيل دخول</button>
-    </div>
-
-  </div>
-
-  <div id="mainBox" class="hidden">
+    <p class="sub">
+      حول أي لينك لرابط أفلييت احترافي
+    </p>
 
     <input
       type="text"
-      id="urlInput"
-      placeholder="حط أي لينك أمازون أو أي موقع هنا"
-    >
+      id="longUrl"
+      placeholder="حط أي لينك أمازون أو متجر هنا"
+    />
 
-    <button id="createBtn">
+    <button
+      class="createBtn"
+      onclick="createShortLink()"
+    >
       Create Short Link
     </button>
 
-    <input
-      type="text"
+    <div
+      class="result"
       id="result"
-      readonly
-      placeholder="اللينك المختصر هيظهر هنا"
     >
+      اللينك المختصر هيظهر هنا
+    </div>
 
-    <button id="copyBtn" class="secondary-btn">
+    <button
+      class="copyBtn"
+      onclick="copyLastLink()"
+    >
       Copy Link
     </button>
 
     <div class="stats">
 
-      <div class="stat-card">
-        <h3 id="linksCount">0</h3>
+      <div class="statBox">
+        <h2 id="linksCount">0</h2>
         <p>Links</p>
       </div>
 
-      <div class="stat-card">
-        <h3 id="clicksCount">0</h3>
+      <div class="statBox">
+        <h2 id="clicksCount">0</h2>
         <p>Clicks</p>
       </div>
 
@@ -191,13 +183,35 @@
 
   </div>
 
+
+
+  <div class="card" style="margin-top:20px">
+
+    <h2 style="margin-bottom:20px">
+      الروابط السابقة
+    </h2>
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>الرابط</th>
+          <th>الكليكات</th>
+          <th>نسخ</th>
+        </tr>
+      </thead>
+
+      <tbody id="linksTable">
+
+      </tbody>
+
+    </table>
+
+  </div>
+
 </div>
 
-<div id="toast">
-  تم نسخ اللينك 🔥
-</div>
-
-<script type="module" src="./index.js"></script>
+<script type="module" src="index.js"></script>
 
 </body>
 </html>
