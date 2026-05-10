@@ -2,7 +2,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const supabaseUrl = 'https://mwtdflzkjlaynmrvlkpj.supabase.co'
 
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13dGRmbHpramxheW5tcnZsa3BqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MTU5NzEsImV4cCI6MjA5Mzk5MTk3MX0.7xPnXS0Xxw4QqrDyrqiVsgI8h_mlK_qVp23gMsMVDnw'
+const supabaseKey = 'sb_publishable_Y-qqdm5sqQQe7BzRv5G_XQ_c5ia1CNM'
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
@@ -14,76 +14,16 @@ const mainBox = document.getElementById('mainBox')
 const signupBtn = document.getElementById('signupBtn')
 const loginBtn = document.getElementById('loginBtn')
 
-const createBtn = document.getElementById('createBtn')
-const copyBtn = document.getElementById('copyBtn')
-
 const emailInput = document.getElementById('email')
 const passwordInput = document.getElementById('password')
 
-const urlInput = document.getElementById('urlInput')
-const resultInput = document.getElementById('result')
-
-const linksCount = document.getElementById('linksCount')
-const clicksCount = document.getElementById('clicksCount')
-
-const toast = document.getElementById('toast')
-
-function showToast() {
-  toast.style.display = 'block'
-
-  setTimeout(() => {
-    toast.style.display = 'none'
-  }, 2000)
-}
-
-function generateCode() {
-  return Math.random().toString(36).substring(2, 8)
-}
-
-function cleanAmazonLink(url) {
-
-  try {
-
-    const parsed = new URL(url)
-
-    if (!parsed.hostname.includes('amazon.')) {
-      return url
-    }
-
-    const params = parsed.searchParams
-
-    params.delete('tag')
-    params.delete('ref')
-    params.delete('psc')
-    params.delete('smid')
-    params.delete('pd_rd_w')
-    params.delete('pd_rd_r')
-    params.delete('pd_rd_wg')
-    params.delete('pf_rd_p')
-    params.delete('pf_rd_r')
-    params.delete('linkCode')
-    params.delete('ascsubtag')
-    params.delete('content-id')
-    params.delete('dib')
-    params.delete('dib_tag')
-
-    const cleanPath = parsed.pathname.replace(/[^/]*hidden-keywords[^/]*/gi, '')
-
-    params.set('tag', AMAZON_TAG)
-
-    return `${parsed.origin}${cleanPath}?${params.toString()}`
-
-  } catch {
-
-    return url
-
-  }
-}
+const longUrlInput = document.getElementById('longUrl')
+const resultBox = document.getElementById('result')
 
 signupBtn.onclick = async () => {
 
-  const email = emailInput.value.trim()
-  const password = passwordInput.value.trim()
+  const email = emailInput.value
+  const password = passwordInput.value
 
   const { error } = await supabase.auth.signUp({
     email,
@@ -92,16 +32,15 @@ signupBtn.onclick = async () => {
 
   if (error) {
     alert(error.message)
-    return
+  } else {
+    alert('🔥 تم إنشاء الحساب')
   }
-
-  alert('تم إنشاء الحساب ✅')
 }
 
 loginBtn.onclick = async () => {
 
-  const email = emailInput.value.trim()
-  const password = passwordInput.value.trim()
+  const email = emailInput.value
+  const password = passwordInput.value
 
   const { error } = await supabase.auth.signInWithPassword({
     email,
@@ -110,127 +49,120 @@ loginBtn.onclick = async () => {
 
   if (error) {
     alert(error.message)
-    return
+  } else {
+
+    authBox.style.display = 'none'
+    mainBox.style.display = 'block'
+
+    alert('🔥 تم تسجيل الدخول')
   }
-
-  authBox.classList.add('hidden')
-  mainBox.classList.remove('hidden')
-
-  loadStats()
 }
 
-async function loadStats() {
+async function createShortLink() {
 
-  const {
-    data: { user }
-  } = await supabase.auth.getUser()
-
-  if (!user) return
-
-  const { data } = await supabase
-    .from('links')
-    .select('*')
-    .eq('user_id', user.id)
-
-  if (!data) return
-
-  linksCount.innerText = data.length
-
-  let totalClicks = 0
-
-  data.forEach(link => {
-    totalClicks += link.clicks || 0
-  })
-
-  clicksCount.innerText = totalClicks
-}
-
-createBtn.onclick = async () => {
-
-  const url = urlInput.value.trim()
+  let url = longUrlInput.value.trim()
 
   if (!url) {
-    alert('حط لينك')
+    alert('ضيفي لينك')
     return
   }
 
-  const cleanUrl = cleanAmazonLink(url)
+  if (url.includes('amazon')) {
 
-  const code = generateCode()
+    if (url.includes('?')) {
+      url += `&tag=${AMAZON_TAG}`
+    } else {
+      url += `?tag=${AMAZON_TAG}`
+    }
+  }
 
-  const shortLink = `${window.location.origin}/${code}`
+  const code = Math.random().toString(36).substring(2, 8)
 
-  const {
-    data: { user }
-  } = await supabase.auth.getUser()
+  const userData = await supabase.auth.getUser()
+
+  const user = userData.data.user
 
   const { error } = await supabase
     .from('links')
-    .insert({
-      code,
-      original_url: cleanUrl,
-      clicks: 0,
-      user_id: user.id
-    })
+    .insert([
+      {
+        code: code,
+        original_url: url,
+        clicks: 0,
+        user_id: user?.id
+      }
+    ])
 
   if (error) {
     alert(error.message)
     return
   }
 
-  resultInput.value = shortLink
+  const shortUrl = window.location.origin + '/' + code
 
-  loadStats()
+  resultBox.innerHTML = `
+    <div style="margin-top:20px">
+      <input 
+        value="${shortUrl}" 
+        readonly
+        style="
+          width:100%;
+          padding:12px;
+          border-radius:10px;
+          border:none;
+          margin-bottom:10px;
+        "
+      >
+
+      <button onclick="copyLink('${shortUrl}')"
+        style="
+          width:100%;
+          padding:12px;
+          border:none;
+          border-radius:10px;
+          background:#ff4d6d;
+          color:white;
+          font-size:16px;
+          cursor:pointer;
+        ">
+        نسخ الرابط 🔥
+      </button>
+    </div>
+  `
 }
 
-copyBtn.onclick = () => {
+window.createShortLink = createShortLink
 
-  resultInput.select()
+window.copyLink = async function(link) {
 
-  document.execCommand('copy')
+  await navigator.clipboard.writeText(link)
 
-  showToast()
+  alert('🔥 تم نسخ الرابط')
 }
 
 async function checkRedirect() {
 
   const path = window.location.pathname.replace('/', '')
 
-  if (!path || path === 'index.html') return
+  if (!path) return
 
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from('links')
     .select('*')
     .eq('code', path)
     .single()
 
-  if (error || !data) return
+  if (data) {
 
-  await supabase
-    .from('links')
-    .update({
-      clicks: (data.clicks || 0) + 1
-    })
-    .eq('id', data.id)
+    await supabase
+      .from('links')
+      .update({
+        clicks: data.clicks + 1
+      })
+      .eq('code', path)
 
-  window.location.href = data.original_url
-}
-
-async function checkUser() {
-
-  const {
-    data: { session }
-  } = await supabase.auth.getSession()
-
-  if (session) {
-
-    authBox.classList.add('hidden')
-
-    mainBox.classList.remove('hidden')
-
-    loadStats()
+    window.location.href = data.original_url
   }
 }
 
-checkUser()
 checkRedirect()
